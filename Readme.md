@@ -1,11 +1,20 @@
 # SY31 Projet: Labyrinthe
 
-## Pour tester le code
+## Première fois
+
 ```bash
-roscore
+cd /ros_ws/src/
+catkin_make
 ```
 
-Lancer les nodes avec 
+## Pour tester le code
+Et dans un nouveau terminal (pas besoin de roscore)
+```bash
+roslaunch SY31_project robot.launch 
+```
+
+
+Lancer les nodes dont on a besoin (dans des nouveaux terminaux) 
 ```bash
 python3 "mon_node.py"
 ```
@@ -13,7 +22,7 @@ python3 "mon_node.py"
 ### Lancer rviz pour la visualisation avec la config
 ``` bash
 cd ros_ws/src/SY31_project/
-rviz -d configs/rviz/config.rviz (pas encore configuré en fait !)
+rviz -d configs/rviz/config.rviz
 ```
 
 ### Accès aux bags :

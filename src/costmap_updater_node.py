@@ -23,8 +23,8 @@ class CostmapUpdaterNode:
         self.last_scan = None
 
         # costmap
-        self.costmap_size = 200  # points
-        self.resolution = 0.05 # 5 cm
+        self.costmap_size = 250  # points
+        self.resolution = 0.04 # cm
         self.costmap = np.zeros((self.costmap_size, self.costmap_size), dtype=np.int8)
         self.origin_x = 0
         self.origin_y = 0
@@ -50,6 +50,8 @@ class CostmapUpdaterNode:
 
     def update_costmap_callback(self, _):
         scan = self.last_scan
+        if self.last_scan is None:
+            return
         for i, distance in enumerate(scan.ranges):
             if distance < scan.range_min or distance > scan.range_max:
                 continue

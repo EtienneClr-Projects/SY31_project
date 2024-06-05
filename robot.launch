@@ -1,0 +1,18 @@
+<launch>
+  <!-- Publie les états des joints -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+  <!-- Publie les transformations statiques définies dans le fichier URDF -->
+  <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf/turtlebot3_burger.urdf.xacro" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+
+  <!-- Récupère l'odometrie et publie la TF d'odom à base_link  -->
+  <node name="odom2pose" pkg="SY31_project" type="odometry_node.py" output="screen"/>
+  <node name="odom_to_base_link_tf_broadcaster" pkg="SY31_project" type="publish_odom_node.py" output="screen"/>
+
+  <!-- Lance le bag -->
+  <node name="play_bag" pkg="rosbag" type="play" args="$(find SY31_project)/bags/2024-05-30-16-07-13.bag"/>
+
+</launch>
