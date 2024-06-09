@@ -15,7 +15,7 @@ class CostmapUpdaterNode:
         rospy.loginfo("Costmap updater node starting...")
 
         # sub to the current position
-        self.estimate_pose_subscriber = rospy.Subscriber("/pose_enco", PoseStamped, self.receive_estimated_pose)
+        self.estimate_pose_subscriber = rospy.Subscriber("/estimated_pose", PoseStamped, self.receive_estimated_pose)
         self.current_pose = np.array([0., 0., 0.]) # x, y, theta
 
         # sub to the lidar
@@ -24,13 +24,13 @@ class CostmapUpdaterNode:
 
         # costmap
         self.costmap_size = 250  # points
-        self.resolution = 0.04 # cm
+        self.resolution = 0.01 # cm
         self.costmap = np.zeros((self.costmap_size, self.costmap_size), dtype=np.int8)
         self.origin_x = 0
         self.origin_y = 0
 
         # timer callback update costmap
-        update_costmap_period_s = 1
+        update_costmap_period_s = 0.3
         rospy.Timer(rospy.Duration(update_costmap_period_s), self.update_costmap_callback)
 
         # pub the costmap
@@ -52,8 +52,9 @@ class CostmapUpdaterNode:
         scan = self.last_scan
         if self.last_scan is None:
             return
+        
         for i, distance in enumerate(scan.ranges):
-            if distance < scan.range_min or distance > scan.range_max:
+            if distance < scan.range_min or distance > scan.range_max or distance > 0.25:
                 continue
             angle = scan.angle_min + i * scan.angle_increment
             x = self.current_pose[0] + distance * cos(angle + self.current_pose[2])

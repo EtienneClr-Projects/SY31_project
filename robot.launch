@@ -9,8 +9,18 @@
 
 
   <!-- Récupère l'odometrie et publie la TF d'odom à base_link  -->
-  <node name="odom2pose" pkg="SY31_project" type="odometry_node.py" output="screen"/>
+  <node name="odometry_node" pkg="SY31_project" type="odometry_node.py" output="screen"/>
   <node name="odom_to_base_link_tf_broadcaster" pkg="SY31_project" type="publish_odom_node.py" output="screen"/>
+  <node name="costmap_updater_node" pkg="SY31_project" type="costmap_updater_node.py" output="screen"/>
+
+  <node name="front_distance_node" pkg="SY31_project" type="front_distance_publisher_node.py" output="screen"/>
+  <node name="direction_node" pkg="SY31_project" type="direction_node.py" output="screen"/>
+  <node name="arrow_cluster_node" pkg="SY31_project" type="arrow_cluster_node.py" output="screen"/>
+
+  <!-- rosrun image_transport republish compressed in:=/turtlebotcam/image_raw out:=/turtlebotcam/image_raw image_transport:=compressed -->
+  <node name="image_transport" pkg="image_transport" type="republish" args="compressed in:=/turtlebotcam/image_raw out:=/image" output="screen"/>
+
+
 
   <!-- Lance le bag -->
   <node name="play_bag" pkg="rosbag" type="play" args="$(find SY31_project)/bags/2024-05-30-16-07-13.bag"/>

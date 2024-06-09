@@ -31,7 +31,6 @@ class Odom2PoseNode:
         self.ENCODER_RESOLUTION = 4096
         self.WHEEL_RADIUS = 0.033
         self.WHEEL_SEPARATION = 0.160
-        self.MAG_OFFSET = np.pi/2.0-0.07
 
         # Variables
         self.x_odom, self.y_odom, self.O_odom = 0, 0, 0
@@ -48,12 +47,29 @@ class Odom2PoseNode:
         self.pub_enco_theta = rospy.Publisher('/enco_theta', Float32, queue_size=10)
         self.pub_gyro_theta = rospy.Publisher('/gyro_theta', Float32, queue_size=10)
 
+        self.pub_estimated_pose = rospy.Publisher('/estimated_pose', PoseStamped, queue_size=10)
+
         # Subscribers
         self.sub_gyro = rospy.Subscriber('/imu', Imu, self.callback_gyro)
         self.sub_enco = rospy.Subscriber('/sensor_state', SensorState, self.callback_enco)
 
+        # 10Hz callback to merge the two sources of odometry
+        rospy.Timer(rospy.Duration(0.1), self.callback_merge)
+
         rospy.loginfo("odom2pose node started !")
 
+    def callback_merge(self, event):
+        # Merge the two sources of odometry
+        
+        # We take the x and y from the encoders only
+        pose = [0, 0, 0]
+        pose[0] = self.x_odom
+        pose[1] = self.y_odom
+        pose[2] = self.O_odom
+        # pose[2] = self.O_gyro
+        # Publish the final pose
+        msg = coordinates_to_message(pose[0], pose[1], pose[2], rospy.Time.now())
+        self.pub_estimated_pose.publish(msg)
 
     def callback_enco(self, sensor_state):
         # Compute the differential in encoder count
@@ -86,8 +102,8 @@ class Odom2PoseNode:
         self.pub_enco_theta.publish(self.O_odom)
 
     def callback_gyro(self, gyro):
-        if self.v == 0:
-            return
+        # if self.v == 0:
+        #     return
 
         # Compute the elapsed time
         t = gyro.header.stamp.to_sec()
@@ -100,14 +116,22 @@ class Odom2PoseNode:
         self.prev_gyro_t = t
 
         # compute the angular velocity
-        az = gyro.angular_velocity.z-0.052
+        # az = gyro.angular_velocity.z-0.052
+        az = gyro.angular_velocity.z
+        # if az < 0.1:
+        #     print(az)
+
+        if az < 0.01:
+            az = 0.0
+        #     az = 0.0
+        
+        # print()
         #print(az)
         
         
         # update O_gyro, x_gyro and y_gyro accordingly (using self.v)
-
-        self.x_gyro += self.v*np.cos(self.O_gyro)*dt
-        self.y_gyro += self.v*np.sin(self.O_gyro)*dt
+        # self.x_gyro += self.v*np.cos(self.O_gyro)*dt
+        # self.y_gyro += self.v*np.sin(self.O_gyro)*dt
         self.O_gyro += az*dt
         
         
