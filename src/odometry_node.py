@@ -65,7 +65,7 @@ class Odom2PoseNode:
         pose = [0, 0, 0]
         pose[0] = self.x_odom
         pose[1] = self.y_odom
-        pose[2] = self.O_odom
+        pose[2] = self.O_gyro
         # pose[2] = self.O_gyro
         # Publish the final pose
         msg = coordinates_to_message(pose[0], pose[1], pose[2], rospy.Time.now())
@@ -93,8 +93,8 @@ class Odom2PoseNode:
         w = (vd - vg) / self.WHEEL_SEPARATION
         
         # Update x_odom, y_odom and O_odom accordingly
-        self.x_odom += self.v*np.cos(self.O_odom)
-        self.y_odom += self.v*np.sin(self.O_odom)
+        self.x_odom += self.v*np.cos(self.O_gyro)
+        self.y_odom += self.v*np.sin(self.O_gyro)
         self.O_odom += w
         
         msg = coordinates_to_message(self.x_odom, self.y_odom, self.O_odom, sensor_state.header.stamp)
@@ -116,18 +116,7 @@ class Odom2PoseNode:
         self.prev_gyro_t = t
 
         # compute the angular velocity
-        # az = gyro.angular_velocity.z-0.052
         az = gyro.angular_velocity.z
-        # if az < 0.1:
-        #     print(az)
-
-        if az < 0.01:
-            az = 0.0
-        #     az = 0.0
-        
-        # print()
-        #print(az)
-        
         
         # update O_gyro, x_gyro and y_gyro accordingly (using self.v)
         # self.x_gyro += self.v*np.cos(self.O_gyro)*dt

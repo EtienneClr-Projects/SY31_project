@@ -10,6 +10,7 @@ catkin_make
 ## Pour tester le code
 Et dans un nouveau terminal (pas besoin de roscore)
 ```bash
+roscore
 roslaunch SY31_project robot.launch 
 ```
 
