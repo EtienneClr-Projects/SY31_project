@@ -6,6 +6,8 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from std_msgs.msg import Int32, String
+from geometry_msgs.msg import PoseStamped
+
 from enum import Enum
 
 # Enum for the direction
@@ -38,17 +40,25 @@ class DirectionNode:
         self.pub_img = rospy.Publisher('~output', Image, queue_size=10)
 
         # Subscriber to the input topic. self.callback is called when a message is received
-        self.image_subscriber = rospy.Subscriber('/turtlebotcam/image_raw', Image, self.image_callback)
+        self.image_subscriber = rospy.Subscriber('/image', Image, self.image_callback)
 
         self.ultrasound_subscriber = rospy.Subscriber('/ultrasound', Int32, self.ultrasound_callback)
         self.last_distance = None
 
         self.direction_publisher = rospy.Publisher('/direction', String, queue_size=10)
 
+        self.pose_subscriber = rospy.Subscriber('/estimated_pose', PoseStamped, self.pose_callback)
+        self.current_pose = None # (x, y, theta)
+
         self.direction = Direction.UNDEFINED
+        self.angle_before_turning = None
 
         rospy.loginfo("direction node started !")
     
+    def pose_callback(self, msg: PoseStamped):
+        # x,y,theta
+        theta = 2*np.arctan2(msg.pose.orientation.z, msg.pose.orientation.w)
+        self.current_pose = (msg.pose.position.x, msg.pose.position.y, theta)
 
     def ultrasound_callback(self, msg: Int32):
         # print("ULTRASOUND: ", msg.data)
@@ -60,6 +70,12 @@ class DirectionNode:
         msg: Image message received
         img_bgr: Width*Height*3 Numpy matrix storing the image
         '''
+
+        if self.last_distance is None:
+            return
+        if self.current_pose is None:
+            return
+        
         # Convert ROS Image -> OpenCV
         try:
             img_bgr = self.bridge.imgmsg_to_cv2(msg, "bgr8")
@@ -93,28 +109,29 @@ class DirectionNode:
         # if there is more blue than red, then we must go
         threshold = 50000
         # we display the distance only if we're close enough
-        if self.last_distance is None:
-            return
-        if self.last_distance > 500 and self.last_distance < 800:
+        if self.last_distance < 800:
             if blue_count > red_count:
                 if blue_count > threshold:
                     if self.direction != Direction.GAUCHE:
-                        print("LEFT")
+                        print("GAUCHE")
+                        self.angle_before_turning = self.current_pose[2]
                     self.direction = Direction.GAUCHE
             else:
                 if red_count > threshold:
                     if self.direction != Direction.DROITE:
-                        print("RIGHT")
+                        print("DROITE")
+                        self.angle_before_turning = self.current_pose[2]
                     self.direction = Direction.DROITE
 
-        # print(blue_count, red_count, self.last_distance)
-        # if there is not enough blue and red, we go straight
-        # if we're too far from a wall, we go straight
-        if blue_count < threshold and red_count < threshold or self.last_distance > 800:
-            if self.direction != Direction.TOUT_DROIT:
-                print("TOUT DROIT")
-            self.direction = Direction.TOUT_DROIT
+        # if we're too far from a wall, we go straight 
+        # elif self.last_distance > 4000:
 
+        # if the difference between current angle and angle before turning is >=90°, we go straight
+        if self.angle_before_turning is not None:
+            if abs(self.current_pose[2] - self.angle_before_turning) >= np.pi/2:
+                if self.direction != Direction.TOUT_DROIT:
+                    print("TOUT DROIT")
+                self.direction = Direction.TOUT_DROIT
 
         self.direction_publisher.publish(direction_to_string(self.direction))
     
