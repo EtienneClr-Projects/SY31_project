@@ -1,28 +1,24 @@
 <launch>
-  <!-- Publie les états des joints -->
+  <!-- Publish joint states -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 
-  <!-- Publie les transformations statiques définies dans le fichier URDF -->
+  <!-- Publish static transforms (from URDF) -->
   <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf/turtlebot3_burger.urdf.xacro" />
-
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-
-  <!-- Récupère l'odometrie et publie la TF d'odom à base_link  -->
-  <node name="odometry_node" pkg="SY31_project" type="odometry_node.py" output="screen"/>
+  <!-- Publish TF (odom-base_link) -->
   <node name="odom_to_base_link_tf_broadcaster" pkg="SY31_project" type="publish_odom_node.py" output="screen"/>
+  
+  <node name="odometry_node" pkg="SY31_project" type="odometry_node.py" output="screen"/>
   <node name="costmap_updater_node" pkg="SY31_project" type="costmap_updater_node.py" output="screen"/>
-
   <node name="front_distance_node" pkg="SY31_project" type="front_distance_publisher_node.py" output="screen"/>
   <node name="direction_node" pkg="SY31_project" type="direction_node.py" output="screen"/>
   <node name="arrow_cluster_node" pkg="SY31_project" type="arrow_cluster_node.py" output="screen"/>
 
-  <!-- rosrun image_transport republish compressed in:=/turtlebotcam/image_raw out:=/turtlebotcam/image_raw image_transport:=compressed -->
+  <!-- republish and decompress image topic -->
   <node name="image_transport" pkg="image_transport" type="republish" args="compressed in:=/turtlebotcam/image_raw out:=/image" output="screen"/>
 
-
-
-  <!-- Lance le bag -->
+  <!-- Play bag -->
   <node name="play_bag" pkg="rosbag" type="play" args="$(find SY31_project)/bags/2024-05-30-16-07-13.bag"/>
 
 </launch>

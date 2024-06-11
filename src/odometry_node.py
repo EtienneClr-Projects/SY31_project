@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import numpy as np
-
 import rospy
+
 from geometry_msgs.msg import PoseStamped
 from turtlebot3_msgs.msg import SensorState
 from sensor_msgs.msg import Imu
 from std_msgs.msg import Float32
 
 from tf.transformations import quaternion_from_euler
+
 
 def coordinates_to_message(x, y, O, t):
     msg = PoseStamped()
@@ -61,12 +62,12 @@ class Odom2PoseNode:
     def callback_merge(self, event):
         # Merge the two sources of odometry
         
-        # We take the x and y from the encoders only
+        # We take the x and y from the encoders only, and theta from the IMU only
         pose = [0, 0, 0]
         pose[0] = self.x_odom
         pose[1] = self.y_odom
         pose[2] = self.O_gyro
-        # pose[2] = self.O_gyro
+
         # Publish the final pose
         msg = coordinates_to_message(pose[0], pose[1], pose[2], rospy.Time.now())
         self.pub_estimated_pose.publish(msg)
@@ -93,7 +94,7 @@ class Odom2PoseNode:
         w = (vd - vg) / self.WHEEL_SEPARATION
         
         # Update x_odom, y_odom and O_odom accordingly
-        self.x_odom += self.v*np.cos(self.O_gyro)
+        self.x_odom += self.v*np.cos(self.O_gyro) # theta gyro, because we rely on IMU's theta for positioning
         self.y_odom += self.v*np.sin(self.O_gyro)
         self.O_odom += w
         
@@ -102,9 +103,6 @@ class Odom2PoseNode:
         self.pub_enco_theta.publish(self.O_odom)
 
     def callback_gyro(self, gyro):
-        # if self.v == 0:
-        #     return
-
         # Compute the elapsed time
         t = gyro.header.stamp.to_sec()
         dt = t - self.prev_gyro_t
@@ -121,8 +119,7 @@ class Odom2PoseNode:
         # update O_gyro, x_gyro and y_gyro accordingly (using self.v)
         # self.x_gyro += self.v*np.cos(self.O_gyro)*dt
         # self.y_gyro += self.v*np.sin(self.O_gyro)*dt
-        self.O_gyro += az*dt
-        
+        self.O_gyro += az*dt        
         
         msg = coordinates_to_message(self.x_gyro, self.y_gyro, self.O_gyro, gyro.header.stamp)
         self.pub_gyro.publish(msg)

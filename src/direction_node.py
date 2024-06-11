@@ -4,12 +4,13 @@ import rospy
 import numpy as np
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
+from enum import Enum
+
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int32, String, Float32
+from std_msgs.msg import String, Float32
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker
 
-from enum import Enum
 
 # Enum for the direction
 class Direction(Enum):
@@ -27,6 +28,7 @@ def direction_to_string(direction: Direction):
         return "TOUT_DROIT"
     else:
         return "UNDEFINED"
+
 
 class DirectionNode:
     def __init__(self):
@@ -130,7 +132,6 @@ class DirectionNode:
 
         # count the number of red pixels
         red_count = cv2.countNonZero(mask)
-        # print("red_count: ", red_count)
 
         # blue mask of the image
         lower_blue = np.array([100, 50, 50])
@@ -139,7 +140,6 @@ class DirectionNode:
 
         # count the number of blue pixels
         blue_count = cv2.countNonZero(mask)
-        # print("blue_count: ", blue_count)
 
         # if there is more blue than red, then we must go
         threshold = 50000
@@ -169,7 +169,6 @@ class DirectionNode:
 
         # if the difference between current angle and angle before turning is >=90°, we go straight
         if self.angle_before_turning is not None:
-            # print(abs(self.current_pose[2] - self.angle_before_turning))
             if abs(self.current_pose[2] - self.angle_before_turning) >= np.pi/2:
                 if self.dir_to_display != "TOUT DROIT":
                     print("TOUT DROIT")

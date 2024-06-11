@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
 import rospy
-from nav_msgs.msg import Odometry
 import tf2_ros
-from geometry_msgs.msg import TransformStamped
-from geometry_msgs.msg import PoseStamped
+
+from geometry_msgs.msg import TransformStamped, PoseStamped
 
 
 class Publisher():
+    """
+    Only used to published the TF between odom and base_link for easier display of topics with RVIZ
+    """
     def __init__(self) -> None:
         rospy.init_node('odom_to_base_link_tf_broadcaster')
-        # rospy.Subscriber('/pose_enco', PoseStamped, self.odom_callback)
         rospy.Subscriber('/estimated_pose', PoseStamped, self.odom_callback)
 
     def odom_callback(self, msg):

@@ -8,16 +8,10 @@ catkin_make
 ```
 
 ## Pour tester le code
-Et dans un nouveau terminal (pas besoin de roscore)
+Et dans un nouveau terminal, 
 ```bash
 roscore
 roslaunch SY31_project robot.launch 
-```
-
-
-Lancer les nodes dont on a besoin (dans des nouveaux terminaux) 
-```bash
-python3 "mon_node.py"
 ```
 
 ### Lancer rviz pour la visualisation avec la config
@@ -33,13 +27,6 @@ pour lancer un bag en boucle (loop):
 ``` bash
 rosbag play <nom_du_bag.bag> -l
 ```
-
-
-
-
-
-
-
 
 
 

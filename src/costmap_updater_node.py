@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-from geometry_msgs.msg import PoseStamped
-from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import OccupancyGrid
-
 import numpy as np
 import rospy
 from math import cos, sin, atan2
 
+
+from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import OccupancyGrid
 
 class CostmapUpdaterNode:
     def __init__(self):

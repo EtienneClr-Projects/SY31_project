@@ -149,7 +149,7 @@ Visualization Manager:
       Axes Radius: 0.05000000074505806
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -159,7 +159,7 @@ Visualization Manager:
       Shape: Axes
       Topic: /pose_enco
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: costmap
@@ -231,7 +231,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 557.8511352539062
+      Scale: 526.4063110351562
       Target Frame: <Fixed Frame>
       X: 0.5383824706077576
       Y: 0.26907992362976074
